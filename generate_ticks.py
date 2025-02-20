@@ -1,19 +1,19 @@
 import numpy as np
 
-def generate_nice_ticks(a, b, min_ticks=10, max_ticks=15):
+def generate_nice_ticks(max_value, min_value, min_ticks=10, max_ticks=15):
     """
-    a > b であると仮定し、区間 [b, a] 内で目盛りの個数が
-    min_ticks 以上 max_ticks 未満となるような「nice ticks」
+    max_value > min_value であると仮定し、区間 [min_value, max_value] 内で
+    目盛りの個数が min_ticks 以上 max_ticks 未満となるような「nice ticks」
     を候補（1×10ⁿ, 2×10ⁿ, 5×10ⁿ, n=-3,...,5）から生成します。
     
     戻り値:
       ticks: 生成された目盛りの配列
       step: 使用した刻み幅
     """
-    if a < b:
-        a, b = b, a  # 安全のため入れ替え
+    if max_value < min_value:
+        max_value, min_value = min_value, max_value  # 安全のため入れ替え
     
-    diff = a - b
+    diff = max_value - min_value
 
     # 候補となる刻み幅を作成（n=-3～5, multipliers: 1, 2, 5）
     candidates = []
@@ -25,12 +25,12 @@ def generate_nice_ticks(a, b, min_ticks=10, max_ticks=15):
     chosen_ticks = None
     chosen_step = None
 
-    # 各候補について、[b, a] 内に含まれる目盛りの個数を求める
+    # 各候補について、[min_value, max_value] 内に含まれる目盛りの個数を求める
     for step in candidates:
-        # b以上の最小の目盛り（b がすでに候補の倍数なら b を含む）
-        lower_tick = np.ceil(b / step) * step
-        # a以下の最大の目盛り
-        upper_tick = np.floor(a / step) * step
+        # min_value以上の最小の目盛り（min_value がすでに候補の倍数なら min_value を含む）
+        lower_tick = np.ceil(min_value / step) * step
+        # max_value以下の最大の目盛り
+        upper_tick = np.floor(max_value / step) * step
 
         # 範囲内に目盛りが存在しなければスキップ
         if lower_tick > upper_tick:
@@ -50,13 +50,13 @@ def generate_nice_ticks(a, b, min_ticks=10, max_ticks=15):
     if chosen_ticks is None:
         best_diff = float('inf')
         for step in candidates:
-            lower_tick = np.ceil(b / step) * step
-            upper_tick = np.floor(a / step) * step
+            lower_tick = np.ceil(min_value / step) * step
+            upper_tick = np.floor(max_value / step) * step
             if lower_tick > upper_tick:
                 continue
             count = int(round((upper_tick - lower_tick) / step)) + 1
             diff_count = abs(count - min_ticks)
-            if diff_count < best_diff:  
+            if diff_count < best_diff:
                 best_diff = diff_count
                 chosen_step = step
                 chosen_ticks = np.arange(lower_tick, upper_tick + step/10, step)
@@ -64,9 +64,9 @@ def generate_nice_ticks(a, b, min_ticks=10, max_ticks=15):
     return chosen_ticks, chosen_step
 
 # 使用例
-a = 0  # 上限
-b = 7 # 下限
+max_value = 0  # 上限
+min_value = 7  # 下限
 
-ticks, step = generate_nice_ticks(a, b)
+ticks, step = generate_nice_ticks(max_value, min_value)
 print("生成された目盛り:", ticks)
 print("使用した刻み幅:", step)
